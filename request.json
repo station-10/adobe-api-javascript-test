@@ -1,0 +1,57 @@
+{
+    "rsid": "saintgobaindistributionprod",
+    "globalFilters": [
+        {
+            "type": "dateRange",
+            "dateRange": "2023-05-01T00:00:00.000/2023-06-01T00:00:00.000",
+            "dateRangeId": "thisMonth"
+        }
+    ],
+    "metricContainer": {
+        "metrics": [
+            {
+                "columnId": "0",
+                "id": "metrics/visits",
+                "sort": "desc"
+            },
+            {
+                "columnId": "1",
+                "id": "metrics/orders"
+            }
+        ]
+    },
+    "dimension": "variables/marketingchannel",
+    "settings": {
+        "countRepeatInstances": true,
+        "includeAnnotations": true,
+        "limit": 50,
+        "page": 0,
+        "nonesBehavior": "return-nones"
+    },
+    "statistics": {
+        "functions": [
+            "col-max",
+            "col-min"
+        ]
+    },
+    "capacityMetadata": {
+        "associations": [
+            {
+                "name": "applicationName",
+                "value": "Analysis Workspace UI"
+            },
+            {
+                "name": "projectId",
+                "value": "undefined"
+            },
+            {
+                "name": "projectName",
+                "value": "New project"
+            },
+            {
+                "name": "panelName",
+                "value": "Freeform table"
+            }
+        ]
+    }
+}
