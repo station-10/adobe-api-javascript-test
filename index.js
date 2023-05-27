@@ -1,30 +1,49 @@
 const axios = require('axios');
-const fs = require('fs');
+require('dotenv').config();
 
-// load credentials from file
-const credentials = JSON.parse(fs.readFileSync('credentials.json'));
+// load credentials from environment variables
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const COMPANY_ID = process.env.COMPANY_ID;
+const SCOPES = process.env.SCOPES;
+
+// API endpoints
+const TOKEN_URL = 'https://ims-na1.adobelogin.com/ims/token/v3';
+const REPORT_URL = `https://analytics.adobe.io/api/${COMPANY_ID}/reports`;
 
 // function to get access token
 async function getAccessToken() {
-    const url = 'https://ims-na1.adobelogin.com/ims/token/v3';
-    const data = `client_id=${credentials.client_id}&client_secret=${credentials.client_secret}&grant_type=client_credentials&scope=${credentials.scopes}`;
-
+    const data = `client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&grant_type=client_credentials&scope=${SCOPES}`;
     const config = {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
     };
 
-    const response = await axios.post(url, data, config);
-    return response.data.access_token;
+    try {
+        const response = await axios.post(TOKEN_URL, data, config);
+        return response.data.access_token;
+    } catch (error) {
+        console.error(`Failed to get access token: ${error}`);
+    }
 }
 
 // function to get data from Adobe Analytics Reporting API
 async function getReportData() {
     const accessToken = await getAccessToken();
+    const requestData = buildRequestData();
+    const config = buildRequestConfig(accessToken);
 
-    const url = `https://analytics.adobe.io/api/${credentials.company_id}/reports`;
-    const requestData = {
+    try {
+        const response = await axios.post(REPORT_URL, requestData, config);
+        return response.data;
+    } catch (error) {
+        console.error(`Failed to get report data: ${error}`);
+    }
+}
+
+function buildRequestData() {
+    return {
         "rsid": "saintgobaindistributionprod",
         "globalFilters": [
             {
@@ -80,20 +99,19 @@ async function getReportData() {
                 }
             ]
         }
-    }
+    };
+}
 
-    const config = {
+function buildRequestConfig(accessToken) {
+    return {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken}`,
-            'x-api-key': credentials.client_id,
-            'x-proxy-global-company-id': credentials.company_id,
+            'x-api-key': CLIENT_ID,
+            'x-proxy-global-company-id': COMPANY_ID,
         },
     };
-
-    const response = await axios.post(url, requestData, config);
-    return response.data;
 }
 
 // call the function to get report data
