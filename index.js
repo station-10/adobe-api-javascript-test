@@ -115,4 +115,8 @@ function buildRequestConfig(accessToken) {
 }
 
 // call the function to get report data
-getReportData().then(console.log).catch(console.error);
+getReportData()
+    .then(data => {
+        console.log(data);
+    })
+    .catch(console.error);
