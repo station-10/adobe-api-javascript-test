@@ -1,1 +1,1 @@
-# adobe-api-chrome-plugin
+# adobe-api-javascript
