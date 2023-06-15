@@ -19,8 +19,11 @@ This will install the required axios and dotenv modules.
 The script expects the following environment variables:
 
 CLIENT_ID - Your Adobe API Client ID
+
 CLIENT_SECRET - Your Adobe API Client Secret
+
 TENANT_ID - Your Adobe Tenant ID
+
 SCOPES - The scopes your application requires access to
 
 You need to create a .env file in the root directory of the project, and add these variables. Here's a template for your .env file:
