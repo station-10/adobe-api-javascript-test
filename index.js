@@ -4,12 +4,13 @@ require('dotenv').config();
 // load credentials from environment variables
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
-const COMPANY_ID = process.env.COMPANY_ID;
+const TENANT_ID = process.env.TENANT_ID;
 const SCOPES = process.env.SCOPES;
+
 
 // API endpoints
 const TOKEN_URL = 'https://ims-na1.adobelogin.com/ims/token/v3';
-const REPORT_URL = `https://analytics.adobe.io/api/${COMPANY_ID}/reports`;
+const REPORT_URL = `https://mc.adobe.io/${TENANT_ID}/campaign/profileAndServicesExt/`;
 
 // function to get access token
 async function getAccessToken() {
@@ -20,103 +21,56 @@ async function getAccessToken() {
         },
     };
 
+    console.log('Sending request to get access token...');
     try {
         const response = await axios.post(TOKEN_URL, data, config);
+        console.log('Successfully received access token.');
+
+        // Assuming 'expires_in' is in seconds, convert it to minutes for a more human-readable format
+        const expiresInMinutes = response.data.expires_in / 60;
+
+        console.log(`The access token will expire in approximately ${expiresInMinutes} minutes.`);
         return response.data.access_token;
     } catch (error) {
-        console.error(`Failed to get access token: ${error}`);
-    }
-}
-
-// function to get data from Adobe Analytics Reporting API
-async function getReportData() {
-    const accessToken = await getAccessToken();
-    const requestData = buildRequestData();
-    const config = buildRequestConfig(accessToken);
-
-    try {
-        const response = await axios.post(REPORT_URL, requestData, config);
-        return response.data;
-    } catch (error) {
-        console.error(`Failed to get report data: ${error}`);
-    }
-}
-
-function buildRequestData() {
-    return {
-        "rsid": "saintgobaindistributionprod",
-        "globalFilters": [
-            {
-                "type": "dateRange",
-                "dateRange": "2023-05-01T00:00:00.000/2023-06-01T00:00:00.000",
-                "dateRangeId": "thisMonth"
-            }
-        ],
-        "metricContainer": {
-            "metrics": [
-                {
-                    "columnId": "0",
-                    "id": "metrics/visits",
-                    "sort": "desc"
-                },
-                {
-                    "columnId": "1",
-                    "id": "metrics/orders"
-                }
-            ]
-        },
-        "dimension": "variables/marketingchannel",
-        "settings": {
-            "countRepeatInstances": true,
-            "includeAnnotations": true,
-            "limit": 50,
-            "page": 0,
-            "nonesBehavior": "return-nones"
-        },
-        "statistics": {
-            "functions": [
-                "col-max",
-                "col-min"
-            ]
-        },
-        "capacityMetadata": {
-            "associations": [
-                {
-                    "name": "applicationName",
-                    "value": "Analysis Workspace UI"
-                },
-                {
-                    "name": "projectId",
-                    "value": "undefined"
-                },
-                {
-                    "name": "projectName",
-                    "value": "New project"
-                },
-                {
-                    "name": "panelName",
-                    "value": "Freeform table"
-                }
-            ]
+        console.error(`Failed to get access token: ${error.message}`);
+        if (error.response) {
+            console.error('Error response body: ', error.response.data);
         }
-    };
+    }
 }
 
-function buildRequestConfig(accessToken) {
-    return {
+
+// function to get data from Adobe Campaign API
+async function getProfileAndServicesData() {
+    const accessToken = await getAccessToken();
+    const config = {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accessToken}`,
             'x-api-key': CLIENT_ID,
-            'x-proxy-global-company-id': COMPANY_ID,
+            'Cache-Control': 'no-cache',
         },
     };
+
+    console.log('Sending request to get profile and services data...');
+    try {
+        const response = await axios.get(REPORT_URL, config);
+        console.log('Successfully received profile and services data.');
+        return response.data;
+    } catch (error) {
+        console.error(`Failed to get profile and services data: ${error.message}`);
+        if (error.response) {
+            console.error('Error response body: ', error.response.data);
+        }
+    }
 }
 
-// call the function to get report data
-getReportData()
+// call the function to get profile and services data
+getProfileAndServicesData()
     .then(data => {
         console.log(data);
     })
-    .catch(console.error);
+    .catch(error => {
+        console.error('Error when calling getProfileAndServicesData:', error.message);
+    });
