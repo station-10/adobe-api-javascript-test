@@ -1,4 +1,4 @@
-# adobe-api-javascript
+# adobe-api-javascript-test
 
 This script uses Node.js and axios to make requests to the Adobe Campaign API and fetch profile and services data.
 
